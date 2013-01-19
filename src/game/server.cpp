@@ -3589,6 +3589,13 @@ namespace server
                 int amt = numclients(ci->clientnum);
                 relayf(2, "\fo%s (%s) has left the game (%s, %d %s)", colorname(ci), gethostname(n), reason >= 0 ? disc_reasons[reason] : "normal", amt, amt != 1 ? "players" : "player");
             }
+            if(ci->uid)
+            {
+                if(!requestlocalmasterf("disconnected %u\n", ci->uid))
+                {
+                    logoutf("Failed to record disconnect. No connection to local master server.");
+                }
+            }
             clients.removeobj(ci);
         }
         else connects.removeobj(ci);

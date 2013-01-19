@@ -1744,6 +1744,7 @@ namespace server
         vector<gameevent *> events;
         vector<uchar> position, messages;
         int posoff, poslen, msgoff, msglen;
+        int uid;
         uint authreq, localauthreq;
         string authname, localauthname;
         vector<char*> groups;
@@ -1788,7 +1789,7 @@ namespace server
             name[0] = 0;
             privilege = PRIV_NONE;
             connected = local = online = wantsmap = failedmap = connectauth = false;
-            authreq = localauthreq = 0;
+            authreq = uid = localauthreq = 0;
             position.setsize(0);
             messages.setsize(0);
             groups.setsize(0);

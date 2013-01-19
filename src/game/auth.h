@@ -233,7 +233,7 @@ namespace auth
         ci->localauthreq = 0;
         
         loopv(groups) ci->groups.add(newstring(groups[i]));
-        
+        ci->uid = uid;
         filtertext(ci->localauthname, name, true, true, false, 100);
         
         srvoutforce(ci, -2, "%s \fs\f0has verified.\fr", colorname(ci));
