@@ -132,25 +132,40 @@ namespace server
     void trycommand(clientinfo *ci, const char *cmd) 
     {
         logoutf("Command: %s: %s", ci->name, cmd);
-    
+        
         vector<char*> args;
-        explodelist(cmd, args);
         
-        if(args.length() < 1) return;
+        char* ptr = NULL;
+        const char* sep = " ";
+        char *cp = strdupa(cmd);
         
-        for(unsigned int i = 0; i < sizeof(commands)/sizeof(command); i++)
+        char* arg = strtok_r(cp, (char*)sep, &ptr);
+        while(arg)
         {
-            if(!strcmp(commands[i].name, args[0]))
-            {
-                if(commands[i].minprivilege <= ci->privilege)
-                {
-                    (*commands[i].functionPtr)(ci, args);
-                }
-                else insufficientpermissions(ci);
-                return;
-            }
+            args.add(newstring(arg));
+            arg = strtok_r(NULL, (char*)sep, &ptr);
         }
-        srvmsgft(ci->clientnum, CON_EVENT, "\fs\f3Error:\fr Unknown command.");
+        
+        bool found = false;
+        
+        if(args.length() >= 1)
+        {
+            for(unsigned int i = 0; i < sizeof(commands)/sizeof(command); i++)
+            {
+                if(!strcmp(commands[i].name, args[0]))
+                {
+                    found = true;
+                    if(commands[i].minprivilege <= ci->privilege)
+                    {
+                        (*commands[i].functionPtr)(ci, args);
+                    }
+                    else insufficientpermissions(ci);
+                    break;
+                }
+            }
+            if(!found) srvmsgft(ci->clientnum, CON_EVENT, "\fs\f3Error:\fr Unknown command.");
+        }
+        args.deletearrays();
     }
 }
 
