@@ -1813,7 +1813,7 @@ namespace server
         if(ci->uid)
         {
             string srvdesc;
-            filtertext(srvdesc, GAME(serverdesc), false);
+            filtertext(srvdesc, GAME(serverdesc), false, false, false);
             const char* teamname = ci->state.state==CS_SPECTATOR ? "spectators" : m_isteam(gamemode, mutators) ? TEAM(ci->team, name) : "FreeForAll";
             if(!requestlocalmasterf("changeteam %u %s %s\n", ci->uid, srvdesc, teamname))
             {
