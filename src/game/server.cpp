@@ -2,6 +2,7 @@
 #include "game.h"
 
 #include "commands.cpp"
+#include "punitiveeffects.cpp"
 
 namespace server
 {
@@ -1806,6 +1807,20 @@ namespace server
         savedscore *sc = findscore(ci, true);
         if(sc) sc->save(ci->state);
     }
+    
+    void sendchangeteam(clientinfo *ci)
+    {
+        if(ci->uid)
+        {
+            string srvdesc;
+            filtertext(srvdesc, GAME(serverdesc), false);
+            const char* teamname = ci->state.state==CS_SPECTATOR ? "spectators" : m_isteam(gamemode, mutators) ? TEAM(ci->team, name) : "FreeForAll";
+            if(!requestlocalmasterf("changeteam %u %s %s\n", ci->uid, srvdesc, teamname))
+            {
+                logoutf("Failed to send changeteam message. No connection to local master server.");
+            }
+        }
+    }
 
     void setteam(clientinfo *ci, int team, bool reset = true, bool info = false)
     {
@@ -1829,6 +1844,7 @@ namespace server
             if(ci->state.aitype == AI_NONE) aiman::dorefresh = GAME(airefresh); // get the ai to reorganise
         }
         if(info) sendf(-1, 1, "ri3", N_SETTEAM, ci->clientnum, ci->team);
+        sendchangeteam(ci);
     }
 
     struct teamcheck
@@ -1934,6 +1950,7 @@ namespace server
     }
 
     void connected(clientinfo *ci);
+    bool spectate(clientinfo *ci, bool val);
 
     #include "auth.h"
 

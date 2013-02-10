@@ -358,6 +358,39 @@ namespace auth
         }
     }
     
+    void effectupdated(punitiveeffects::punitiveeffect* effect)
+    {
+        loopv(clients)
+        {
+            clientinfo *ci = clients[i];
+            uint ip = getclientip(ci->clientnum);
+            if(((effect->ip & effect->mask) == (ip & effect->mask)))
+            {
+                const char* effect_type = punitiveeffects::type_name(effect->type, true);
+                srvmsgf(ci->clientnum, "\fs\f1Info:\fr You are now \fs\f3%s\fr for \"\fs\f4%s\fr\".", effect_type, effect->reason);
+                if(!(ci->privilege || ci->local || hasmastergroup(ci) || hasadmingroup(ci)))
+                {
+                    if(effect->type==punitiveeffects::BAN) disconnect_client(ci->clientnum, DISC_IPBAN);
+                    if(effect->type==punitiveeffects::SPECTATE && ci->state.state!=CS_SPECTATOR) spectate(ci, true);
+                }
+            }
+        }
+    }
+
+    void effectremoved(punitiveeffects::punitiveeffect* effect)
+    {
+        loopv(clients)
+        {
+            clientinfo *ci = clients[i];
+            uint ip = getclientip(ci->clientnum);
+            if(((effect->ip & effect->mask) == (ip & effect->mask)))
+            {
+                const char* effect_type = punitiveeffects::type_name(effect->type, true);
+                srvmsgf(ci->clientnum, "\fs\f1Info:\fr You are no longer \fs\f3%s\fr for \"\fs\f4%s\fr\".", effect_type, effect->reason);
+            }
+        }
+    }
+
     void processlocalinput(const char *p)
     {
         fprintf(stderr, "started processlocalinput.\n");
@@ -365,6 +398,10 @@ namespace auth
         vector<char*> w;
         explodelist(p, w);
         
+        uint id, ip, mask;
+		string val;
+		int pos;
+
         if(!strcmp(w[0], "error")) conoutf("master server error: %s", w[1]);
         else if(!strcmp(w[0], "echo")) conoutf("master server reply: %s", w[1]);
         else if(!strcmp(w[0], "failauth")) localauthfailed((uint)(atoi(w[1])));
@@ -382,6 +419,21 @@ namespace auth
             uint reqid = (uint)(atoi(w[1]));
             w.remove(0, 2); // Remove the stuff before the names
             namesresult(reqid, w);
+        }
+        else if(sscanf(p, "effectupdate %u %s %u %u %n", &id, val, &ip, &mask, &pos) == 4)
+        {
+            punitiveeffects::punitiveeffect* effect = punitiveeffects::update(id, ip, mask, punitiveeffects::type_id(val), &p[pos]);
+            effectupdated(effect);
+        }
+        else if(sscanf(p, "effectremove %u", &id) == 1)
+        {
+            punitiveeffects::punitiveeffect* effect = punitiveeffects::remove(id);
+            if(effect)
+            {
+                effectremoved(effect);
+                free(effect->reason);
+                free(effect);
+            }
         }
         else loopj(ipinfo::MAXTYPES) if(!strcmp(w[0], ipinfotypes[j]))
         {
@@ -409,7 +461,7 @@ namespace auth
     void reglocalserver()
     {
         conoutf("updating local master server");
-        requestlocalmasterf("server %d\n", serverport);
+        requestlocalmasterf("regserv %d\n", serverport);
         lastlocalactivity = totalmillis;
     }
 
