@@ -584,6 +584,7 @@ game/server-standalone.o: game/capture.h game/defend.h game/bomber.h
 game/server-standalone.o: game/auth.h game/capturemode.h game/defendmode.h
 game/server-standalone.o: game/bombermode.h game/duelmut.h game/aiman.h
 game/server-standalone.o: game/extinfo.h
+game/punitiveeffects-standalone.o: game/punitiveeffects.cpp game/game.h
 
 shared/cube.h.gch: shared/tools.h shared/command.h shared/geom.h
 shared/cube.h.gch: shared/ents.h shared/iengine.h shared/igame.h
