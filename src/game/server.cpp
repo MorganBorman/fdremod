@@ -4827,14 +4827,14 @@ namespace server
                 }
 
                 case N_LISTDEMOS:
-                    if(ci->state.state==CS_SPECTATOR) break;
+                    //if(ci->state.state==CS_SPECTATOR) break;
                     listdemos(sender);
                     break;
 
                 case N_GETDEMO:
                 {
                     int n = getint(p);
-                    if(ci->state.state==CS_SPECTATOR) break;
+                    //if(ci->state.state==CS_SPECTATOR) break;
                     senddemo(sender, n);
                     break;
                 }
